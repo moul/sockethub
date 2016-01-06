@@ -236,7 +236,10 @@ func main() {
 		logrus.Errorf("error: %v", err)
 	})
 
-	http.Handle("/", http.FileServer(assetFS()))
+	//http.Handle("/static/", http.FileServer(assetFS()))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./bower_components/socket.io-client"))))
+	//http.Handle("/static/", http.FileServer(&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"}))
+
 	http.Handle("/socket.io/", server)
 	port := os.Getenv("PORT")
 	if port == "" {
