@@ -22,7 +22,7 @@ build:	$(BINARIES)
 
 
 cmd/sockethub/bindata.go: bower_components/socket.io-client/socket.io.js
-	go-bindata-assetfs -prefix $(dir $<) $<
+	go-bindata-assetfs $<
 	mv bindata_assetfs.go $@
 
 
