@@ -71,3 +71,9 @@ docker-build:
 	  docker inspect --type=image --format="{{ .Id }}" moul/$$binary || true; \
 	  echo "Now you can run 'docker push $(USER)/$$binary'";                  \
 	done
+
+
+.PHONY: dokku_deploy
+dokku_deploy:
+	git remote add dokku dokku@dokku.m.42.am:sockethub || true
+	git push dokku master
