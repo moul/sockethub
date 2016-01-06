@@ -1,0 +1,31 @@
+{
+	"ImportPath": "github.com/moul/sockethub",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"github.com/moul/sockethub/cmd/sockethub"
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-53-g446d1c1",
+			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
+		},
+		{
+			"ImportPath": "github.com/googollee/go-engine.io",
+			"Rev": "a66cf68b24e56df0cacdc6041b93742f983a296a"
+		},
+		{
+			"ImportPath": "github.com/googollee/go-socket.io",
+			"Comment": "0.9.x-51-g14bb3d0",
+			"Rev": "14bb3d0368089a74cb52164a7a697cf404bda9c6"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "c66b764651cdca39f42d263b07a507c6e8b58ee9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
+		}
+	]
+}
