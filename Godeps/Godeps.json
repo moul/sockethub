@@ -11,6 +11,10 @@
 			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
 		},
 		{
+			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
+			"Rev": "d5cac425555ca5cf00694df246e04f05e6a55150"
+		},
+		{
 			"ImportPath": "github.com/googollee/go-engine.io",
 			"Rev": "a66cf68b24e56df0cacdc6041b93742f983a296a"
 		},
