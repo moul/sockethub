@@ -236,6 +236,7 @@ func main() {
 		logrus.Errorf("error: %v", err)
 	})
 
+	http.Handle("/", http.FileServer(assetFS()))
 	http.Handle("/socket.io/", server)
 	port := os.Getenv("PORT")
 	if port == "" {

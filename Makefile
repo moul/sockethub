@@ -1,6 +1,7 @@
 # Project-specific variables
 BINARIES ?=	sockethub
 CONVEY_PORT ?=	9042
+EXTRA_DEPS ?=	cmd/sockethub/bindata.go
 
 
 # Common variables
@@ -20,7 +21,12 @@ all:	build
 build:	$(BINARIES)
 
 
-$(BINARIES):	$(SOURCES)
+cmd/sockethub/bindata.go: bower_components/socket.io-client/socket.io.js
+	go-bindata-assetfs -prefix $(dir $<) $<
+	mv bindata_assetfs.go $@
+
+
+$(BINARIES):	$(SOURCES) $(EXTRA_DEPS)
 	$(GO) build -o $@ ./cmd/$@
 
 
