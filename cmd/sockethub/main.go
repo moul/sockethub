@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/googollee/go-socket.io"
+	"github.com/rs/cors"
 )
 
 type Room struct {
@@ -236,17 +237,18 @@ func main() {
 		logrus.Errorf("error: %v", err)
 	})
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
-	//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./bower_components/socket.io-client"))))
-	//http.Handle("/static/", http.FileServer(&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"}))
+	mux := http.NewServeMux()
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
+	mux.Handle("/socket.io/", server)
 
-	http.Handle("/socket.io/", server)
+	handler := cors.Default().Handler(mux)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
 	}
 	logrus.Infof("Serving at :%s", port)
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), handler); err != nil {
 		logrus.Fatalf("http error: %v", err)
 	}
 }
