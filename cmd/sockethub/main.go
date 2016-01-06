@@ -241,7 +241,10 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
 	mux.Handle("/socket.io/", server)
 
-	handler := cors.Default().Handler(mux)
+	c := cors.New(cors.Options{
+		AllowCredentials: true,
+	})
+	handler := c.Handler(mux)
 
 	port := os.Getenv("PORT")
 	if port == "" {
