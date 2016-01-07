@@ -40,6 +40,13 @@ type RoomGetUsersArgs struct {
 
 type StatsArgs struct{}
 
+type Response struct {
+	Event  string      `json:"event"`
+	Author string      `json:"author",omitempty`
+	Room   string      `json:"room",omitempty`
+	Data   interface{} `json:"data",omitempty`
+}
+
 type Room struct {
 	Metadata interface{}
 	Clients  map[string]*Client
@@ -166,7 +173,7 @@ func main() {
 		brain.GetClient(so)
 
 		// motd
-		so.Emit("message", "welcome-on-server")
+		so.Emit("message", Response{Event: "welcome-on-server"})
 
 		// Socket.io events
 		so.On("disconnection", func() {
@@ -177,7 +184,10 @@ func main() {
 
 			client := brain.GetClient(so)
 			for roomName := range client.Rooms {
-				so.BroadcastTo(roomName, "message", "client-disconnected", so.Id())
+				so.BroadcastTo(roomName, "message", Response{
+					Event:  "client-disconnected",
+					Author: so.Id(),
+				})
 			}
 
 			brain.RemoveClient(so)
@@ -206,11 +216,20 @@ func main() {
 
 			// Join on Socket.IO
 			so.Join(args.RoomName)
-			so.Emit("message", "welcome-to-room", args.RoomName, room.Metadata)
+			so.Emit("message", Response{
+				Event: "welcome-to-room",
+				Room:  args.RoomName,
+				Data:  room.Metadata,
+			})
 
 			// broadcast client infos
 			client := brain.GetClient(so)
-			so.BroadcastTo(args.RoomName, "message", "new-room-client", so.Id(), client.Metadata)
+			so.BroadcastTo(args.RoomName, "message", Response{
+				Event:  "new-room-client",
+				Author: so.Id(),
+				Data:   client.Metadata,
+				Room:   args.RoomName,
+			})
 		})
 
 		so.On("room-broadcast", func(args RoomBroadcastArgs) {
@@ -219,7 +238,13 @@ func main() {
 				"args":   args,
 			}).Info("room-broadcast")
 
-			so.BroadcastTo(args.RoomName, "message", "broadcast-from", so.Id(), args.Message)
+			so.BroadcastTo(args.RoomName, "message",
+				Response{
+					Event:  "broadcast-from",
+					Author: so.Id(),
+					Data:   args.Message,
+					Room:   args.RoomName,
+				})
 		})
 
 		so.On("client-set-metadata", func(args ClientSetMetadataArgs) {
@@ -231,7 +256,11 @@ func main() {
 			client := brain.GetClient(so)
 			client.Metadata = args.Metadata
 			for roomName := range client.Rooms {
-				so.BroadcastTo(roomName, "message", "client-metadata-update", so.Id(), args.Metadata)
+				so.BroadcastTo(roomName, "message", Response{
+					Event:  "client-metadata-update",
+					Author: so.Id(),
+					Data:   args.Metadata,
+				})
 			}
 		})
 
@@ -249,7 +278,12 @@ func main() {
 			room.Metadata = args.Metadata
 
 			// Broadcast the change
-			so.BroadcastTo(args.RoomName, "message", "room-metadata-update", args.RoomName, args.Metadata)
+			so.BroadcastTo(args.RoomName, "message", Response{
+				Event:  "room-metadata-update",
+				Author: so.Id(),
+				Room:   args.RoomName,
+				Data:   args.Metadata,
+			})
 		})
 
 		so.On("room-leave", func(args RoomLeaveArgs) {
@@ -258,7 +292,11 @@ func main() {
 				"args":   args,
 			}).Info("room-leave")
 
-			so.BroadcastTo(args.RoomName, "message", "client-leave", so.Id())
+			so.BroadcastTo(args.RoomName, "message", Response{
+				Event:  "client-leave",
+				Author: so.Id(),
+				Room:   args.RoomName,
+			})
 
 			brain.Leave(so, args.RoomName)
 			// FIXME: check error
@@ -277,7 +315,11 @@ func main() {
 				users[client.Id] = client.Metadata
 			}
 
-			so.Emit("message", "room-users", users)
+			so.Emit("message", Response{
+				Event: "room-users",
+				Data:  users,
+				Room:  args.RoomName,
+			})
 		})
 
 		so.On("stats", func(args StatsArgs) {
@@ -286,7 +328,10 @@ func main() {
 				"args":   args,
 			}).Info("stats")
 
-			so.Emit("message", "statistics", "FIXME")
+			so.Emit("message", Response{
+				Event: "statistics",
+				Data:  "FIXME",
+			})
 		})
 	})
 
