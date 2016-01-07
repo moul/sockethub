@@ -10,6 +10,36 @@ import (
 	"github.com/rs/cors"
 )
 
+type PingArgs struct{}
+
+type RoomLeaveArgs struct {
+	RoomName string `json:"room"`
+}
+
+type RoomMetadataArgs struct {
+	RoomName string      `json:"room"`
+	Metadata interface{} `json:"metadata"`
+}
+
+type RoomBroadcastArgs struct {
+	RoomName string      `json:"room-name"`
+	Message  interface{} `json:"message"`
+}
+
+type ClientSetMetadataArgs struct {
+	Metadata interface{} `json:"metadata"`
+}
+
+type RoomJoinArgs struct {
+	RoomName string `json:"room"`
+}
+
+type RoomGetUsersArgs struct {
+	RoomName string `json:"room"`
+}
+
+type StatsArgs struct{}
+
 type Room struct {
 	Metadata interface{}
 	Clients  map[string]*Client
@@ -127,12 +157,23 @@ func main() {
 	}
 
 	server.On("connection", func(so socketio.Socket) {
+		logrus.WithFields(logrus.Fields{
+			"client": so.Id(),
+			"args":   nil,
+		}).Info("connection")
+
+		// Initialize the client in brain
+		brain.GetClient(so)
+
 		// motd
 		so.Emit("message", "welcome-on-server")
 
 		// Socket.io events
 		so.On("disconnection", func() {
-			logrus.Infof("on disconnect")
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   nil,
+			}).Info("disconnection")
 
 			client := brain.GetClient(so)
 			for roomName := range client.Rooms {
@@ -143,58 +184,93 @@ func main() {
 		})
 
 		// protocol
-		so.On("ping", func() {
+
+		so.On("ping", func(args PingArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("ping")
 			so.Emit("pong")
 		})
 
-		so.On("room-join", func(roomName string) {
-			room, err := brain.Join(so, roomName)
+		so.On("room-join", func(args RoomJoinArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("room-join")
+
+			room, err := brain.Join(so, args.RoomName)
 			if err != nil {
-				logrus.Errorf("Failed to join room %q: %v", roomName, err)
+				logrus.Errorf("Failed to join room %q: %v", args.RoomName, err)
 			}
 
 			// Join on Socket.IO
-			so.Join(roomName)
-			so.Emit("message", "welcome-to-room", roomName, room.Metadata)
+			so.Join(args.RoomName)
+			so.Emit("message", "welcome-to-room", args.RoomName, room.Metadata)
 
 			// broadcast client infos
 			client := brain.GetClient(so)
-			so.BroadcastTo(roomName, "message", "new-room-client", so.Id(), client.Metadata)
+			so.BroadcastTo(args.RoomName, "message", "new-room-client", so.Id(), client.Metadata)
 		})
 
-		so.On("room-broadcast", func(roomName string, msg ...interface{}) {
-			so.BroadcastTo(roomName, "message", "broadcast-from", so.Id(), msg)
+		so.On("room-broadcast", func(args RoomBroadcastArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("room-broadcast")
+
+			so.BroadcastTo(args.RoomName, "message", "broadcast-from", so.Id(), args.Message)
 		})
 
-		so.On("client-set-metadata", func(metadata ...interface{}) {
+		so.On("client-set-metadata", func(args ClientSetMetadataArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("client-set-metadata")
+
 			client := brain.GetClient(so)
-			client.Metadata = metadata
+			client.Metadata = args.Metadata
 			for roomName := range client.Rooms {
-				so.BroadcastTo(roomName, "message", "client-metadata-update", so.Id(), metadata)
+				so.BroadcastTo(roomName, "message", "client-metadata-update", so.Id(), args.Metadata)
 			}
 		})
 
-		so.On("room-set-metadata", func(roomName string, metadata ...interface{}) {
-			room := brain.GetRoom(roomName)
+		so.On("room-set-metadata", func(args RoomMetadataArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("room-set-metadata")
+
+			room := brain.GetRoom(args.RoomName)
 
 			// FIXME: check if user is in the room
 
 			// Set metadata
-			room.Metadata = metadata
+			room.Metadata = args.Metadata
 
 			// Broadcast the change
-			so.BroadcastTo(roomName, "message", "room-metadata-update", roomName, metadata)
+			so.BroadcastTo(args.RoomName, "message", "room-metadata-update", args.RoomName, args.Metadata)
 		})
 
-		so.On("room-leave", func(roomName string) {
-			so.BroadcastTo(roomName, "message", "client-leave", so.Id())
+		so.On("room-leave", func(args RoomLeaveArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("room-leave")
 
-			brain.Leave(so, roomName)
+			so.BroadcastTo(args.RoomName, "message", "client-leave", so.Id())
+
+			brain.Leave(so, args.RoomName)
 			// FIXME: check error
 		})
 
-		so.On("room-get-users", func(roomName string) {
-			room := brain.GetRoom(roomName)
+		so.On("room-get-users", func(args RoomGetUsersArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("room-get-users")
+
+			room := brain.GetRoom(args.RoomName)
 
 			users := map[string]interface{}{}
 			for _, client := range room.Clients {
@@ -204,7 +280,12 @@ func main() {
 			so.Emit("message", "room-users", users)
 		})
 
-		so.On("stats", func() {
+		so.On("stats", func(args StatsArgs) {
+			logrus.WithFields(logrus.Fields{
+				"client": so.Id(),
+				"args":   args,
+			}).Info("stats")
+
 			so.Emit("message", "statistics", "FIXME")
 		})
 	})
