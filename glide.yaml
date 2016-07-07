@@ -1,0 +1,24 @@
+package: github.com/moul/sockethub
+import:
+- package: github.com/Sirupsen/logrus
+  version: 446d1c146faa8ed3f4218f056fcd165f6bcfda81
+- package: github.com/elazarl/go-bindata-assetfs
+  version: d5cac425555ca5cf00694df246e04f05e6a55150
+- package: github.com/googollee/go-engine.io
+  version: a66cf68b24e56df0cacdc6041b93742f983a296a
+- package: github.com/googollee/go-socket.io
+  version: 14bb3d0368089a74cb52164a7a697cf404bda9c6
+- package: github.com/gorilla/websocket
+  version: c66b764651cdca39f42d263b07a507c6e8b58ee9
+- package: github.com/rs/cors
+  version: ceb1fbf238d7711a11a86a2622d0b85305348aeb
+- package: github.com/rs/xhandler
+  version: d9d9599b6aaf6a058cb7b1f48291ded2cbd13390
+- package: golang.org/x/net
+  version: 0cb26f788dd4625d1956c6fd97ffc4c90669d129
+  subpackages:
+  - context
+- package: golang.org/x/sys
+  version: 833a04a10549a95dc34458c195cbad61bbb6cb4d
+  subpackages:
+  - unix
