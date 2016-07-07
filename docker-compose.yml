@@ -1,0 +1,8 @@
+sockethub:
+  labels:
+    io.rancher.container.pull_image: always
+  tty: false
+  stdin_open: false
+  image: moul/sockethub:latest
+  expose:
+    - "5000"
