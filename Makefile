@@ -16,6 +16,10 @@ USER ?=		$(shell whoami)
 
 all:	build
 
+run: up
+
+up:
+	docker-compose up -d --remove-orphans --force-recreate
 
 .PHONY: build
 build:	$(BINARIES)

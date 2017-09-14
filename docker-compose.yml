@@ -1,8 +1,21 @@
-sockethub:
-  labels:
-    io.rancher.container.pull_image: always
-  tty: false
-  stdin_open: false
-  image: moul/sockethub:latest
-  expose:
-    - "5000"
+version: '2'
+
+services:
+  sockethub:
+    labels:
+      io.rancher.container.pull_image: always
+    tty: false
+    stdin_open: false
+    image: moul/sockethub:latest
+    expose:
+      - "5000"
+    networks:
+      - default
+      - service-proxy
+    environment:
+      - VIRTUAL_HOST=sockethub.m.42.am
+
+networks:
+  service-proxy:
+    external: true
+    
