@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
             }
             logToFile(event.room, socket, 'event:join', out)
             io.to(event.room).emit('event:join', out)
-            let limit = Math.min(event.max_log_entries, 50);
+            let limit = Math.min(event.max_log_entries, 500);
             readLastLines.read(logFilename(event.room), limit)
                 .then((lines) => {
                     lines.split(/\r?\n/).forEach((line) => {
