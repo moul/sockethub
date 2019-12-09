@@ -17,9 +17,6 @@ io.on('connection', (socket) => {
     socket.on('disconnecting', (reason) => {
         console.log(id, 'disconnecting', reason)
         Object.keys(socket.rooms).forEach(async (room) => {
-            if (peerMap[room] !== undefined) {
-                room = "_general"
-            }
             logToFile(room, socket, 'on:disconnecting', {'reason': reason})
             socket.leave(room)
             let roomPeers = await allRoomPeers(room);
@@ -55,7 +52,7 @@ io.on('connection', (socket) => {
             logToFile(event.room, socket, 'event:join', out)
             io.to(event.room).emit('event:join', out)
             let limit = Math.min(event.max_log_entries, 50);
-            readLastLines.read('log-'+event.room+'.txt', limit)
+            readLastLines.read(logFilename(event.room), limit)
                 .then((lines) => {
                     lines.split(/\r?\n/).forEach((line) => {
                         if (line.length < 1) {
@@ -87,6 +84,13 @@ io.on('connection', (socket) => {
     })
 })
 
+function logFilename(room) {
+    if (peerMap[room] !== undefined) {
+        return 'log/general.txt'
+    }
+    return 'log/room-' + room + '.txt'
+}
+
 let logToFile = (room, socket, kind, data) => {
     let line = {
         'date': Date.now(),
@@ -97,7 +101,7 @@ let logToFile = (room, socket, kind, data) => {
         'kind': kind,
         'data': data,
     }
-    fs.appendFile('log-'+room+'.txt', JSON.stringify(line) + "\n", (err) => {
+    fs.appendFile(logFilename(room), JSON.stringify(line) + "\n", (err) => {
         if (err) console.error('log', line)
     })
 }
@@ -120,6 +124,8 @@ async function allRoomPeers(room) {
 io.on('error', (error) => {
     console.log('io.error', error)
 })
+
+process.on("SIGINT", () => process.exit());
 
 http.listen(3000, () => {
     console.log('listening on *:3000')

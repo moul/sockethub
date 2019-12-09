@@ -1,3 +1,4 @@
+log/*.txt
 log-*.txt
 node_modules/
 *~

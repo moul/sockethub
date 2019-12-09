@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/moul/sockethub#readme",
   "dependencies": {
+    "express": "^4.17.1",
     "read-last-lines": "^1.7.1",
     "socket.io": "^2.3.0"
   }
