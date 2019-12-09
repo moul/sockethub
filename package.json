@@ -1,0 +1,24 @@
+{
+  "name": "sockethub",
+  "version": "2.0.0",
+  "description": "generic socket.io server with rooms, for prototyping",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moul/sockethub.git"
+  },
+  "author": "Manfred Touron <https://manfred.life>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/moul/sockethub/issues"
+  },
+  "homepage": "https://github.com/moul/sockethub#readme",
+  "dependencies": {
+    "read-last-lines": "^1.7.1",
+    "socket.io": "^2.3.0"
+  }
+}
